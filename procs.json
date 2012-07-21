@@ -1,5 +1,5 @@
 {
-    "server": {
+    "web-server": {
         "command": "nodemon"
       , "color": "blue"
       , "env": {
@@ -12,6 +12,14 @@
           , "--watch ./lib"
           , "--watch ./pub"
           , "--watch ./app.js"
+        ]
+    }
+  , "irc-server": {
+        "command": "node"
+      , "color": "yellow"
+      , "cwd": "/apps/ircd.js"
+      , "args": [
+            "/apps/ircd.js/bin/ircd.js"
         ]
     }
 }
