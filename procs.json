@@ -1,0 +1,17 @@
+{
+    "server": {
+        "command": "nodemon"
+      , "color": "blue"
+      , "env": {
+            "NODE_ENV": "development"
+          , "PORT": "3000"
+        }
+      , "cwd": "/apps/webirc"
+      , "args": [
+            "--debug ./app.js"
+          , "--watch ./lib"
+          , "--watch ./pub"
+          , "--watch ./app.js"
+        ]
+    }
+}
