@@ -1,0 +1,21 @@
+{
+    "description": "Simple web-based IRC client"
+  , "version": "0.0.0"
+  , "private": true
+  , "dependencies": {
+        "union": "0.3.0"
+      , "flatiron": "0.2.5"
+      , "irc": "*"
+      , "socket.io": "*"
+    }
+  , "devDependencies": {
+        "api-easy": "0.3.2"
+      , "mocha" : "*"
+    }
+  , "scripts": {
+        "start": "node app.js"
+    }
+  , "name": "webirc"
+  , "author": "Gabriel Adomnicai"
+  , "homepage": ""
+}
