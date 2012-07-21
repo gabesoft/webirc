@@ -3,10 +3,11 @@
   , "version": "0.0.0"
   , "private": true
   , "dependencies": {
-        "union": "0.3.0"
-      , "flatiron": "0.2.5"
+        "union": "*"
+      , "flatiron": "*"
       , "irc": "*"
       , "socket.io": "*"
+      , "jade": "*"
     }
   , "devDependencies": {
         "api-easy": "0.3.2"
