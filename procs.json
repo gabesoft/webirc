@@ -8,10 +8,10 @@
         }
       , "cwd": "/apps/webirc"
       , "args": [
-            "--debug ./app.js"
+            "--debug ./server.js"
           , "--watch ./lib"
           , "--watch ./pub"
-          , "--watch ./app.js"
+          , "--watch ./server.js"
         ]
     }
   , "irc-server": {

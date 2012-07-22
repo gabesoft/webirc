@@ -3,7 +3,10 @@ var flatiron = require('flatiron')
   , path     = require('path')
   , jade     = require('jade')
   , irc      = require('irc')
+  , ecstatic = require('ecstatic')
   , app      = flatiron.app
+  , io       = null
+  , socket   = require('socket.io')
 
   , createIrcClient =  function() {
         var port     = app.config.port || 6667
@@ -37,6 +40,11 @@ var flatiron = require('flatiron')
 app.config.file({ file: path.join(__dirname, 'config', 'config.json') });
 
 app.use(flatiron.plugins.http);
+app.http.before = [
+    ecstatic(__dirname + '/pub', {
+        autoIndex: false
+    })
+];
 
 app.router.get('/', function () {
     var indexFile  = path.join(__dirname, 'pub/views/index.jade')
@@ -45,6 +53,7 @@ app.router.get('/', function () {
       , layout     = fs.readFileSync(layoutFile, 'utf8')
       , options    = {
             pretty: true
+          , filename: layoutFile
         }
       , indexLocals  = {}
       , layoutLocals = {
@@ -52,7 +61,7 @@ app.router.get('/', function () {
           , javascript: ''
           , body: jade.compile(index, options)(indexLocals)
         }
-      , html       = jade.compile(layout, options)(layoutLocals);
+      , html = jade.compile(layout, options)(layoutLocals);
 
     client.join('#dev');
     client.say('#dev', 'hello');
@@ -63,3 +72,12 @@ app.router.get('/', function () {
 });
 
 app.start(3000);
+
+io = socket.listen(app.server);
+
+io.sockets.on('connection', function(socket) {
+    socket.emit('servermsg', { msg: 'the server says hi' });
+    socket.on('clientmsg', function(data) {
+        console.log(data);
+    });
+});

@@ -9,6 +9,7 @@
       , "socket.io": "0.9.6"
       , "jade": "0.26.3"
       , "stylus": "0.28.2"
+      , "ecstatic": "0.1.6"
     }
   , "devDependencies": {
         "api-easy": "0.3.2"
