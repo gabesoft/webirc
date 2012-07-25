@@ -3,13 +3,14 @@
   , "version": "0.0.0"
   , "private": true
   , "dependencies": {
-        "union": "0.3.3"
+        "console-trace": "0.2.1"
+      , "ecstatic": "0.1.6"
       , "flatiron": "0.2.5"
       , "irc": "0.3.4"
-      , "socket.io": "0.9.6"
       , "jade": "0.26.3"
+      , "socket.io": "0.9.6"
       , "stylus": "0.28.2"
-      , "ecstatic": "0.1.6"
+      , "union": "0.3.3"
     }
   , "devDependencies": {
         "api-easy": "0.3.2"
