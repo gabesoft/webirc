@@ -14,10 +14,29 @@
           , "--watch ./server.js"
         ]
     }
+  , "vogue": {
+        "command": "vogue"
+      , "color": "magenta"
+      , "cwd": "/apps/webirc"
+      , "args": [ "--port 8001" , "./pub" ]
+    }
+  , "stylus": {
+        "command": "./node_modules/stylus/bin/stylus"
+      , "color": "yellow"
+      , "cwd": "/apps/webirc"
+      , "args": [
+            "--use nib"
+          , "--compress"
+          , "--watch ./pub/stylesheets"
+          , "--out ./pub/css"
+          , "./pub/stylesheets/site.styl"
+        ]
+    }
   , "irc-server": {
         "command": "node"
       , "color": "yellow"
       , "cwd": "/apps/ircd.js"
+      , "killSignal": "SIGKILL"
       , "args": [
             "/apps/ircd.js/bin/ircd.js"
         ]

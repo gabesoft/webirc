@@ -7,6 +7,7 @@ var flatiron = require('flatiron')
   , app      = flatiron.app
   , io       = null
   , socket   = require('socket.io')
+  , clients  = {}
 
   , createIrcClient =  function(nick) {
         return new irc.Client('localhost', nick, {
@@ -15,9 +16,9 @@ var flatiron = require('flatiron')
           , port: app.config.port || 6667
           , debug: false
           , showErrors: false
-          , autoRejoin: true
+          , autoRejoin: false
           , autoConnect: false
-          , channels: []
+          , channels: ['#dev']
           , password: null
           , secure: false
           , selfSigned: false
@@ -28,9 +29,7 @@ var flatiron = require('flatiron')
         });
     };
 
-require('console-trace')({
-    always: true
-});
+require('console-trace')({ always: true });
 
 app.config.file({ file: path.join(__dirname, 'config', 'config.json') });
 
@@ -73,22 +72,32 @@ io.sockets.on('connection', function(socket) {
         console.log(data);
     });
 
-    var clients = {}
-      , getClient = function(nick, callback) {
+    var getClient = function(nick, callback) {
             console.log(nick, !!clients[nick]);
             if (!clients[nick]) {
                 var client    = createIrcClient(nick);
                 clients[nick] = client;
 
+                client.id = nick;
+                console.log('client created', nick, client.opt.nick, client.nick);
+
+                client.on('raw', function(data) {
+                    console.log('RAW', data);
+                });
+
+                client.on('registered', function(message) {
+                    console.log('client registered', client.nick, client.id);
+                });
+
                 client.on('join', function(channel, nick, message) {
-                    console.log(nick + ' has joined ' + channel, client.nick, nick);
+                    console.log(nick + ' has joined ' + channel, client.nick, nick, 'id', client.id);
                     if (client.nick === nick) {
                         socket.emit('join', { channel: channel, nick: nick, message: message });
                     }
                 });
 
                 client.on('message', function(nick, to, text, message) {
-                    console.log('message received', arguments);
+                    console.log('message received', arguments[0], client.nick, arguments[2]);
                     socket.emit('message', {
                         nick: nick
                       , to: to
@@ -98,6 +107,7 @@ io.sockets.on('connection', function(socket) {
                 });
 
                 client.on('part', function(channel, nick, reason, message) {
+                    console.log('part', nick, client.nick);
                     socket.emit('part', {
                         channel: channel
                       , nick: nick
@@ -117,6 +127,28 @@ io.sockets.on('connection', function(socket) {
                 callback(clients[nick]);
             }
         };
+
+    socket.on('command', function(data) {
+        // todo: make messages consistent across client and server
+        getClient(data.nick, function(client) {
+            switch(data.command) {
+                case 'join':
+                    client.join(data.data);
+                    break;
+                case 'nick':
+                    client.nick(data.nick);
+                    break;
+                case 'say':
+                    client.say(data.target, data.data);
+                    break;
+                case 'part':
+                    client.part(data.data);
+                    break;
+                default:
+                    console.error('invalid command', data);
+            }
+        });
+    });
 
     socket.on('join', function(data) {
         //console.log('joining', data);
