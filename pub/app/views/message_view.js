@@ -12,12 +12,8 @@ var MessageView = Backbone.View.extend({
               , self  = this
               , first = this.$el.find('li:first')
               , count = this.$el.find('li').size();
-            this.$el.append(el);
 
-            this.$el.animate({
-                scrollTop: count * first.height()
-            }, 500, function() {
-                self.$el.find('li:last').effect('highlight', {}, 500);
-            });
+            this.$el.append(el);
+            this.$el.animate({ scrollTop: count * first.height() }, 500);
         }
     });

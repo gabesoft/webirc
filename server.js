@@ -82,7 +82,9 @@ io.sockets.on('connection', function(socket) {
                 console.log('client created', nick, client.opt.nick, client.nick);
 
                 client.on('raw', function(data) {
-                    console.log('RAW', data);
+                    if (data.command !== 'PING' && data.command !== 'PONG') {
+                        console.log('RAW', data);
+                    }
                 });
 
                 client.on('registered', function(message) {
@@ -97,10 +99,12 @@ io.sockets.on('connection', function(socket) {
                 });
 
                 client.on('message', function(nick, to, text, message) {
-                    console.log('message received', arguments[0], client.nick, arguments[2]);
+                    //console.log('message received', client.nick, nick, arguments[2], client.nick === nick);
+                    console.log('message received: ', message, 'and sent to:', client.nick, 'from:', nick);
                     socket.emit('message', {
                         nick: nick
                       , to: to
+                      , dest: client.nick
                       , text: text
                       , message: message
                     });
@@ -114,6 +118,10 @@ io.sockets.on('connection', function(socket) {
                       , reason: reason
                       , message: message
                     });
+                });
+
+                client.on('motd', function() {
+                    socket.emit('motd', arguments);
                 });
 
                 client.on('error', function(e) {
@@ -133,10 +141,11 @@ io.sockets.on('connection', function(socket) {
         getClient(data.nick, function(client) {
             switch(data.command) {
                 case 'join':
+                    client.nick = data.nick;
                     client.join(data.data);
                     break;
                 case 'nick':
-                    client.nick(data.nick);
+                    client.nick = data.nick;
                     break;
                 case 'say':
                     client.say(data.target, data.data);

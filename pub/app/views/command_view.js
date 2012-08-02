@@ -26,7 +26,7 @@ var CommandView = Backbone.View.extend({
               , input = this.$el.find('#command-input')
               , text  = input.val()
               , ENTER = 13
-              , pat   = /^!([a-z]+)\s+(.*)$/
+              , pat   = /^\/([a-z]+)\s+(.*)$/
               , cmd   = 'say'
               , data  = text
               , match = null;
@@ -42,16 +42,15 @@ var CommandView = Backbone.View.extend({
             if (cmd === 'nick') {
                 this.nick = data;
             }
-            else if (cmd === 'channel') {
+            if (cmd === 'join') {
                 this.channel = data;
-            } else {
-                this.trigger('command', { 
-                    nick: this.nick
-                  , command: cmd
-                  , target: this.channel    // todo: allow user to change channel
-                  , data: data 
-                });
             }
+            this.trigger('command', { 
+                nick: this.nick
+              , command: cmd
+              , target: this.channel    // todo: allow user to change channel
+              , data: data 
+            });
 
             input.val('');
         }

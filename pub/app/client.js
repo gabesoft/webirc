@@ -12,33 +12,41 @@ $(document).ready(function() {
     });
 
     //commandView.on('message', function(nick, text) {
-        //socket.emit('say', { channel: '#dev', nick: nick, text: text });
-        //messageView.message(nick, text);
+    //socket.emit('say', { channel: '#dev', nick: nick, text: text });
+    //messageView.message(nick, text);
     //});
 
     //commandView.on('nick-change', function(nick) {
-        //socket.emit('join', { channel: '#dev', nick: nick });
+    //socket.emit('join', { channel: '#dev', nick: nick });
     //});
 
     //socket.on('servermsg', function(data) {
-        //console.log(data);
+    //console.log(data);
     //});
 
     socket.on('message', function(data) {
         console.log('message', data);
-        messageView.say(data.nick, data.text);
+        if (data.dest === commandView.nick) {
+            messageView.say(data.nick, data.text);
+        }
     });
 
     socket.on('join', function(data) {
         console.log('join', data);
+        messageView.say(data.nick, 'joined ' + data.channel);
     });
 
     socket.on('part', function(data) {
         console.log('part', data);
+        messageView.say(data.nick, 'left ' + data.channel);
+    });
+
+    socket.on('motd', function(data) {
+        console.log('motd', data);
     });
 
     //socket.on('part', function(data) {
-        //console.log('part', data);
+    //console.log('part', data);
     //});
 
     //socket.emit('clientmsg', { msg: 'client up and running' });
