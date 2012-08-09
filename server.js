@@ -65,6 +65,7 @@ app.start(3000);
 
 io = socket.listen(app.server);
 
+// TODO: move io setup to its own file
 io.set('log level', 1);
 io.sockets.on('connection', function(socket) {
     socket.emit('servermsg', { msg: 'the server says hi' });
@@ -72,13 +73,32 @@ io.sockets.on('connection', function(socket) {
         console.log(data);
     });
 
-    var getClient = function(nick, callback) {
-            console.log(nick, !!clients[nick]);
-            if (!clients[nick]) {
-                var client    = createIrcClient(nick);
-                clients[nick] = client;
+    var send = function(clientNick, callback) {
+            var nick       = clientNick
+              , updateNick = function(oldNick, newNick, client) {
+                    delete clients[oldNick];
+                    clients[newNick] = client;
+                    nick             = newNick;
+                };
 
-                client.id = nick;
+            // TODO: use nick to fire events only to the appropriate client
+            //       the client should change it's nick on the 'nick' event
+            //       so we need to change this nick too
+
+            // TODO: move client setup to its own file
+
+            if (!clients[nick]) {
+                var client = createIrcClient(nick)
+                  , emit   = function() {
+                        var args = Array.prototype.slice.apply(arguments);
+                        
+                        // TODO: remove this method and inline call to emit
+                        //if (client.nick === nick) { // TODO: this check should not be necessary 
+                            socket.emit.apply(socket, args);
+                        //}
+                    };
+
+                clients[nick] = client;
                 console.log('client created', nick, client.opt.nick, client.nick);
 
                 client.on('raw', function(data) {
@@ -87,21 +107,14 @@ io.sockets.on('connection', function(socket) {
                     }
                 });
 
-                client.on('registered', function(message) {
-                    console.log('client registered', client.nick, client.id);
-                });
-
                 client.on('join', function(channel, nick, message) {
-                    console.log(nick + ' has joined ' + channel, client.nick, nick, 'id', client.id);
-                    if (client.nick === nick) {
-                        socket.emit('join', { channel: channel, nick: nick, message: message });
-                    }
+                    console.log(nick + ' has joined ' + channel, client.nick, nick);
+                    emit('join', { channel: channel, nick: nick, message: message });
                 });
 
                 client.on('message', function(nick, to, text, message) {
-                    //console.log('message received', client.nick, nick, arguments[2], client.nick === nick);
                     console.log('message received: ', message, 'and sent to:', client.nick, 'from:', nick);
-                    socket.emit('message', {
+                    emit('message', {
                         nick: nick
                       , to: to
                       , dest: client.nick
@@ -112,7 +125,8 @@ io.sockets.on('connection', function(socket) {
 
                 client.on('part', function(channel, nick, reason, message) {
                     console.log('part', nick, client.nick);
-                    socket.emit('part', {
+
+                    emit('part', {
                         channel: channel
                       , nick: nick
                       , reason: reason
@@ -121,7 +135,17 @@ io.sockets.on('connection', function(socket) {
                 });
 
                 client.on('motd', function() {
-                    socket.emit('motd', arguments);
+                    emit('motd', arguments);
+                });
+
+                client.on('registered', function(message) {
+                    updateNick(nick, client.nick, client);
+                    emit('nick', client.nick, message);
+                });
+
+                client.on('NICK', function(newNick) {
+                    updateNick(client.nick, newNick, client);
+                    emit('nick', newNick);
                 });
 
                 client.on('error', function(e) {
@@ -136,47 +160,61 @@ io.sockets.on('connection', function(socket) {
             }
         };
 
-    socket.on('command', function(data) {
-        // todo: make messages consistent across client and server
-        getClient(data.nick, function(client) {
-            switch(data.command) {
-                case 'join':
-                    client.nick = data.nick;
-                    client.join(data.data);
-                    break;
-                case 'nick':
-                    client.nick = data.nick;
-                    break;
-                case 'say':
-                    client.say(data.target, data.data);
-                    break;
-                case 'part':
-                    client.part(data.data);
-                    break;
-                default:
-                    console.error('invalid command', data);
-            }
+    //socket.on('command', function(data) {
+    //send(data.nick, function(client) {
+    //switch(data.command) {
+    //case 'join':
+    //client.nick = data.nick;
+    //client.join(data.data);
+    //break;
+    //case 'nick':
+    //client.nick = data.nick;
+    //break;
+    //case 'say':
+    //client.say(data.target, data.data);
+    //break;
+    //case 'part':
+    //client.part(data.data);
+    //break;
+    //default:
+    //console.error('invalid command', data);
+    //}
+    //});
+    //});
+
+    socket.on('join', function(nick, channel) {
+        console.log('join', arguments);
+        send(nick, function(client) {
+            client.join(channel);
         });
     });
 
-    socket.on('join', function(data) {
-        //console.log('joining', data);
-        getClient(data.nick, function(client) {
-            client.join(data.channel);
+    socket.on('part', function(nick, channel) {
+        send(nick, function(client) {
+            client.part(channel);
         });
     });
 
-    socket.on('say', function(data) {
-        console.log('saying', data);
-        getClient(data.nick, function(client) {
-            client.say(data.channel, data.text);
+    socket.on('say', function(nick, channel, message) {
+        console.log('say', arguments);
+        send(nick, function(client) {
+            client.say(channel, message);
         });
     });
 
-    socket.on('part', function(data) {
-        console.log('parting', data);
-        getClient(data.nick, function(client) {
-            client.part(data.channel);
+    socket.on('connect', function(nick) {
+        send(nick, function(client) {
+            client.connect(10, function() {
+                console.log('client ' + nick + ' connected', arguments);
+            });
+        });
+    });
+
+    socket.on('disconnect', function(nick, message) {
+        send(nick, function(client) {
+            client.disconnect(message || '', function() {
+                console.log('client ' + nick + ' disconnected', arguments);
+            });
         });
     });
 });

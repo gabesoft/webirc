@@ -6,6 +6,7 @@ var CommandView = Backbone.View.extend({
       , initialize: function() {
             this.nick    = 'notset';
             this.channel = '#dev';
+
             _.bindAll(this, 'send');
         }
 
@@ -39,18 +40,22 @@ var CommandView = Backbone.View.extend({
                 data = match[2];
             }
 
-            if (cmd === 'nick') {
-                this.nick = data;
+            switch(cmd) {
+                case 'nick':
+                    this.nick = data;
+                    break;
+                case 'join':
+                    this.trigger('command', 'join', this.nick, data);
+                    break;
+                case 'part':
+                    this.trigger('command', 'part', this.nick, this.channel);
+                    break;
+                case 'say':
+                    this.trigger('command', 'say', this.nick, this.channel, data);
+                    break;
+                default:
+                    console.log('invalid command ' + cmd);
             }
-            if (cmd === 'join') {
-                this.channel = data;
-            }
-            this.trigger('command', { 
-                nick: this.nick
-              , command: cmd
-              , target: this.channel    // todo: allow user to change channel
-              , data: data 
-            });
 
             input.val('');
         }

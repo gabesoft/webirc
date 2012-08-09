@@ -4,45 +4,40 @@ $(document).ready(function() {
       , commandView = new CommandView({ el: $('#command') })
       , messageView = new MessageView({ el: $('#messages') });
 
-    commandView.on('command', function(data) {
-        socket.emit('command', data);
-        if (data.command === 'say') {
-            messageView.say(data.nick, data.data);
+    // todo: adjust the chat view horizontally & vertically with the window
+
+    commandView.on('command', function() {
+        var args = Array.prototype.slice.apply(arguments)
+          , len  = args.length;
+        socket.emit.apply(socket, args);
+
+        if (args[0] === 'say') {
+            messageView.say(commandView.nick, args[len - 1]);
         }
     });
 
-    //commandView.on('message', function(nick, text) {
-    //socket.emit('say', { channel: '#dev', nick: nick, text: text });
-    //messageView.message(nick, text);
-    //});
-
-    //commandView.on('nick-change', function(nick) {
-    //socket.emit('join', { channel: '#dev', nick: nick });
-    //});
-
-    //socket.on('servermsg', function(data) {
-    //console.log(data);
-    //});
-
     socket.on('message', function(data) {
-        console.log('message', data);
-        if (data.dest === commandView.nick) {
+        if (data.dest === commandView.nick) {   // TODO: this should be taken care of on the server
             messageView.say(data.nick, data.text);
         }
     });
 
     socket.on('join', function(data) {
-        console.log('join', data);
+        // todo: ensure that the server fires events only to the appropriate clients
+        commandView.channel = data.channel;
         messageView.say(data.nick, 'joined ' + data.channel);
     });
 
     socket.on('part', function(data) {
-        console.log('part', data);
         messageView.say(data.nick, 'left ' + data.channel);
     });
 
     socket.on('motd', function(data) {
         console.log('motd', data);
+    });
+
+    socket.on('nick', function(nick) {
+        commandView.nick = nick;
     });
 
     //socket.on('part', function(data) {
