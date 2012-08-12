@@ -65,13 +65,47 @@ app.start(3000);
 
 io = socket.listen(app.server);
 
-// TODO: move io setup to its own file
 io.set('log level', 1);
 io.sockets.on('connection', function(socket) {
+    //var client = new IRC(socket, 'localhost');
+    //client.initialize();
+    // --------------------
+    //socket.on('initialize', function() {
+        //var id = util.uniqueId();
+        //irc.initialize(id, socket);
+        //socket.emit('initialize_success', id);
+    //});
+
+    //socket.on('connect', function(id, nick) {
+        //// todo: create client here if not created
+        //// if a client exists but with a different nick
+        //// quit and destroy current client
+        //// create a new client with the new nick
+        //irc.connect(id, nick);
+    //});
+
+    //socket.on('disconnect', function(id) {
+        //// on disconnect destroy the client 
+        //irc.disconnect(id);
+    //});
+    // --------------------
+
+
     socket.emit('servermsg', { msg: 'the server says hi' });
     socket.on('clientmsg', function(data) {
         console.log(data);
     });
+
+    //socket.on('initialize', function(id) {
+    //// this could work to have a socket for each client
+    //// the client would have to use the same namespace as well
+    //// the id could be generated on the server as well
+    //io
+    //.of('/' + id)
+    //.on('connection', function(socket) {
+    //initializeConnection(id, socket);
+    //});
+    //});
 
     var send = function(clientNick, callback) {
             var nick       = clientNick
@@ -91,10 +125,10 @@ io.sockets.on('connection', function(socket) {
                 var client = createIrcClient(nick)
                   , emit   = function() {
                         var args = Array.prototype.slice.apply(arguments);
-                        
+
                         // TODO: remove this method and inline call to emit
                         //if (client.nick === nick) { // TODO: this check should not be necessary 
-                            socket.emit.apply(socket, args);
+                        socket.emit.apply(socket, args);
                         //}
                     };
 
@@ -108,6 +142,8 @@ io.sockets.on('connection', function(socket) {
                 });
 
                 client.on('join', function(channel, nick, message) {
+                    // todo: on joining first check that the client has the specified channel
+                    // client.chans[target] = {serverName: target, unread_messages: 0, unread_mentions: 0};
                     console.log(nick + ' has joined ' + channel, client.nick, nick);
                     emit('join', { channel: channel, nick: nick, message: message });
                 });
