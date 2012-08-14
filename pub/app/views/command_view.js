@@ -14,6 +14,22 @@ var CommandView = Backbone.View.extend({
 
         }
 
+      , input: function() {
+            return this.$el.find('#command-input');
+      }
+
+      , connect: function() {
+            var el = this.input();
+            el.removeClass('disconnected');
+            el.addClass('connected');
+        }
+
+      , disconnect: function() {
+            var el = this.input();
+            el.removeClass('connected');
+            el.addClass('disconnected');
+        }
+
       , messageInput: function() {
             return this.$el.find('#message-input');
         }
@@ -24,10 +40,10 @@ var CommandView = Backbone.View.extend({
 
       , send: function(e, keyCode) {
             var key   = keyCode || e.keyCode
-              , input = this.$el.find('#command-input')
+              , input = this.input()
               , text  = input.val()
               , ENTER = 13
-              , pat   = /^\/([a-z]+)\s+(.*)$/
+              , pat   = /^\/([a-z]+)(\s+(.*))?$/
               , cmd   = 'say'
               , data  = text
               , match = null;
@@ -37,21 +53,25 @@ var CommandView = Backbone.View.extend({
             match = pat.exec(text);
             if (match !== null) {
                 cmd  = match[1].toLowerCase();
-                data = match[2];
+                data = match[3];
             }
 
             switch(cmd) {
                 case 'nick':
                     this.nick = data;
+                    this.trigger('command', 'connect', this.nick);
                     break;
                 case 'join':
-                    this.trigger('command', 'join', this.nick, data);
+                    this.trigger('command', 'join', data);
                     break;
                 case 'part':
-                    this.trigger('command', 'part', this.nick, this.channel);
+                    this.trigger('command', 'part', this.channel);
                     break;
                 case 'say':
-                    this.trigger('command', 'say', this.nick, this.channel, data);
+                    this.trigger('command', 'say', this.channel, data);
+                    break;
+                case 'quit':
+                    this.trigger('command', 'quit', 'logging out');
                     break;
                 default:
                     console.log('invalid command ' + cmd);

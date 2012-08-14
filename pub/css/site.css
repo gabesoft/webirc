@@ -1,2 +1,4 @@
 ul#messages{height:100px;width:500px;overflow:auto;border:1px solid #008080;padding:2px}
-input#command-input{width:500px;font-size:1.5em;padding:2px;border:1px solid #808080}
+#command-input{width:500px;font-size:1.5em;padding:2px}
+.disconnected{border:1px solid #f00}
+.connected{border:1px solid #008000}

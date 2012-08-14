@@ -1,35 +1,58 @@
 
 $(document).ready(function() {
     var socket      = io.connect()
+      , id          = null
       , commandView = new CommandView({ el: $('#command') })
       , messageView = new MessageView({ el: $('#messages') });
 
     // todo: adjust the chat view horizontally & vertically with the window
+    // todo: get rid of id if possible (at least on the client
+
+    socket.emit('initialize');
+    socket.on('initialized', function(cid) {
+        console.log('initialized', cid, id);
+        id = cid;
+    });
+
+    socket.on('not-initialized', function(cid) {
+        console.log('a client with id ' + cid + ' was not initialized');
+    });
 
     commandView.on('command', function() {
         var args = Array.prototype.slice.apply(arguments)
           , len  = args.length;
+
+        args.splice(1, 0, id);
+
+        console.log('command', args);
         socket.emit.apply(socket, args);
 
         if (args[0] === 'say') {
-            messageView.say(commandView.nick, args[len - 1]);
+            messageView.say(commandView.nick, args[len]);
         }
     });
 
-    socket.on('message', function(data) {
-        if (data.dest === commandView.nick) {   // TODO: this should be taken care of on the server
-            messageView.say(data.nick, data.text);
+    socket.on('message', function(cid, from, to, text, message) {
+        console.log('client-onmessage', arguments);
+        if (cid === id) {
+            messageView.say(from, text);
         }
     });
 
-    socket.on('join', function(data) {
-        // todo: ensure that the server fires events only to the appropriate clients
-        commandView.channel = data.channel;
-        messageView.say(data.nick, 'joined ' + data.channel);
+    socket.on('join', function(cid, channel, nick, message) {
+        console.log('client-onjoin', arguments);
+        if (cid === id) {
+            commandView.channel = channel;
+            messageView.say(nick, 'joined ' + channel);
+        }
     });
 
-    socket.on('part', function(data) {
-        messageView.say(data.nick, 'left ' + data.channel);
+    socket.on('part', function(cid, channel, nick) {
+        console.log('client-onpart', arguments);
+        if (cid === id) {
+            commandView.channel = 'not-set';
+            messageView.say(nick, 'left ' + channel);
+        }
     });
 
     socket.on('motd', function(data) {
@@ -40,14 +63,23 @@ $(document).ready(function() {
         commandView.nick = nick;
     });
 
-    //socket.on('part', function(data) {
-    //console.log('part', data);
-    //});
+    socket.on('connect', function(cid) {
+        console.log('connected', id);
+        if (cid === id) {
+            commandView.connect();
+        }
+    });
 
-    //socket.emit('clientmsg', { msg: 'client up and running' });
+    socket.on('quit', function(cid, message) {
+        if (cid === id) {
+            messageView.say(commandView.nick, message);
+            commandView.disconnect();
+        }
+    });
 
-    //socket.emit('join', { channel: '#dev', nick: 'snoop' });
-    //socket.emit('join', { channel: '#dev', nick: 'laura' });
-
-    //console.log('doc is ready');
+    socket.on('registered', function(cid, data) {
+        if (cid === id) {
+            messageView.say(data.nick, data.args.join(' '));
+        }
+    });
 });
