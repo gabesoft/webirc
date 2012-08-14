@@ -6,28 +6,7 @@ var flatiron = require('flatiron')
   , ecstatic = require('ecstatic')
   , app      = flatiron.app
   , io       = null
-  , socket   = require('socket.io')
-  , clients  = {}
-
-  , createIrcClient =  function(nick) {
-        return new irc.Client('localhost', nick, {
-            userName: nick                              // TODO: remove spaces from userName
-          , realName: 'web irc client'
-          , port: app.config.port || 6667
-          , debug: false
-          , showErrors: false
-          , autoRejoin: false
-          , autoConnect: false
-          , channels: ['#dev']
-          , password: null
-          , secure: false
-          , selfSigned: false
-          , certExpired: false
-          , floodProtection: true
-          , floodProtectionDelay: 1000
-          , stripColors: true
-        });
-    };
+  , socket   = require('socket.io');
 
 require('console-trace')({ always: true });
 
@@ -67,11 +46,5 @@ io = socket.listen(app.server);
 
 io.set('log level', 1);
 io.sockets.on('connection', function(socket) {
-    var client = new IRC(socket, 'localhost');
-    client.initialize();
-
-    //socket.emit('servermsg', { msg: 'the server says hi' });
-    //socket.on('clientmsg', function(data) {
-        //console.log(data);
-    //});
+    (new IRC(socket, 'localhost')).initialize();
 });
