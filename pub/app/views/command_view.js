@@ -16,7 +16,7 @@ var CommandView = Backbone.View.extend({
 
       , input: function() {
             return this.$el.find('#command-input');
-      }
+        }
 
       , connect: function() {
             var el = this.input();

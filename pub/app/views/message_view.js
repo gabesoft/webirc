@@ -7,7 +7,7 @@ var MessageView = Backbone.View.extend({
 
         }
 
-      , say: function(nick, text) {
+      , print: function(nick, text) {
             var el    = '<li>' + nick + ': ' + text + '</li>'
               , self  = this
               , first = this.$el.find('li:first')

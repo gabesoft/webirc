@@ -6,7 +6,7 @@ $(document).ready(function() {
       , messageView = new MessageView({ el: $('#messages') });
 
     // todo: adjust the chat view horizontally & vertically with the window
-    // todo: get rid of id if possible (at least on the client
+    // todo: get rid of id if possible (at least on the client)
 
     socket.emit('initialize');
     socket.on('initialized', function(cid) {
@@ -28,14 +28,14 @@ $(document).ready(function() {
         socket.emit.apply(socket, args);
 
         if (args[0] === 'say') {
-            messageView.say(commandView.nick, args[len]);
+            messageView.print(commandView.nick, args[len]);
         }
     });
 
     socket.on('message', function(cid, from, to, text, message) {
         console.log('client-onmessage', arguments);
         if (cid === id) {
-            messageView.say(from, text);
+            messageView.print(from, text);
         }
     });
 
@@ -43,7 +43,7 @@ $(document).ready(function() {
         console.log('client-onjoin', arguments);
         if (cid === id) {
             commandView.channel = channel;
-            messageView.say(nick, 'joined ' + channel);
+            messageView.print(nick, 'joined ' + channel);
         }
     });
 
@@ -51,7 +51,7 @@ $(document).ready(function() {
         console.log('client-onpart', arguments);
         if (cid === id) {
             commandView.channel = 'not-set';
-            messageView.say(nick, 'left ' + channel);
+            messageView.print(nick, 'left ' + channel);
         }
     });
 
@@ -72,14 +72,14 @@ $(document).ready(function() {
 
     socket.on('quit', function(cid, message) {
         if (cid === id) {
-            messageView.say(commandView.nick, message);
+            messageView.print(commandView.nick, message);
             commandView.disconnect();
         }
     });
 
     socket.on('registered', function(cid, data) {
         if (cid === id) {
-            messageView.say(data.nick, data.args.join(' '));
+            messageView.print(data.nick, data.args.join(' '));
         }
     });
 });
