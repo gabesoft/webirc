@@ -1,6 +1,17 @@
 var MessageView = Backbone.View.extend({
         initialize: function() {
+            var self   = this
+              , offset = 150
+              , w      = $(window);
 
+            self.$el.height(w.height() - offset);
+
+            w.resize(function() {
+                var w = $(window);
+                self.$el.height(w.height() - offset);
+            });
+
+            self.template = Mustache.compile($('#message-template').html());
         }
 
       , render: function() {
@@ -8,12 +19,13 @@ var MessageView = Backbone.View.extend({
         }
 
       , print: function(nick, text) {
-            var el    = '<li>' + nick + ': ' + text + '</li>'
+            // TODO: show nicks in a different color
+            var html  = this.template({ nick: nick, text: text })
               , self  = this
               , first = this.$el.find('li:first')
               , count = this.$el.find('li').size();
 
-            this.$el.append(el);
+            this.$el.append(html);
             this.$el.animate({ scrollTop: count * first.height() }, 500);
         }
     });
