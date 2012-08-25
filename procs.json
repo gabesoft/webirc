@@ -15,10 +15,10 @@
         ]
     }
   , "vogue": {
-        "command": "vogue"
+        "command": "/apps/vogue/src/vogue.js"
       , "color": "magenta"
-      , "cwd": "/apps/webirc"
-      , "args": [ "--port 8001" , "./pub" ]
+      , "cwd": "/apps/vogue/src/"
+      , "args": [ "--port 8001" , "/apps/webirc/pub" ]
     }
   , "stylus": {
         "command": "./node_modules/stylus/bin/stylus"

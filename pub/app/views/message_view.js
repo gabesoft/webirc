@@ -1,7 +1,7 @@
 var MessageView = Backbone.View.extend({
         initialize: function() {
             var self   = this
-              , offset = 150
+              , offset = 180
               , w      = $(window);
 
             self.$el.height(w.height() - offset);
@@ -19,7 +19,7 @@ var MessageView = Backbone.View.extend({
         }
 
       , print: function(nick, text) {
-            // TODO: show nicks in a different color
+            // TODO: show nicks in different colors
             var html  = this.template({ nick: nick, text: text })
               , self  = this
               , first = this.$el.find('li:first')

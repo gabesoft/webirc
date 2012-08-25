@@ -1,8 +1,13 @@
 div.container_16
   div#content.grid_16
-      p Welcome To Web IRC
-      ul#messages
-          li welcome
-          li messages will appear here
-      div#command
-          input#command-input.disconnected(type='text')
+      h2#welcome Welcome To Web IRC (connected to localhost)
+      div#left-column.grid_9
+          ul#messages
+              li welcome
+              li enter a nick to start
+          div#command
+              input#command-input.disconnected(type='text')
+      div#right-column.grid_6
+          ul#users
+              li user1
+              li user2

@@ -3,9 +3,9 @@ $(document).ready(function() {
     var socket      = io.connect()
       , id          = null
       , commandView = new CommandView({ el: $('#command') })
-      , messageView = new MessageView({ el: $('#messages') });
+      , messageView = new MessageView({ el: $('#messages') })
+      , nameView    = new NameView({el: $('#users') });
 
-    // todo: adjust the chat view horizontally & vertically with the window
     // todo: get rid of id if possible (at least on the client)
 
     socket.emit('initialize');
@@ -55,11 +55,19 @@ $(document).ready(function() {
         }
     });
 
+    socket.on('names', function(cid, channel, nicks) {
+        console.log('names', arguments);
+        if (cid === id) {
+            nameView.show(channel, nicks);
+        }
+    });
+
     socket.on('motd', function(data) {
         console.log('motd', data);
     });
 
     socket.on('nick', function(nick) {
+        console.log('nick change', commandView.nick, nick);
         commandView.nick = nick;
     });
 
@@ -79,6 +87,7 @@ $(document).ready(function() {
 
     socket.on('registered', function(cid, data) {
         if (cid === id) {
+            commandView.nick = data.args[0];
             messageView.print(data.nick, data.args.join(' '));
         }
     });
